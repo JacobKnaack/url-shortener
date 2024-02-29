@@ -4,65 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Url Shortener</title>
-  <style>
-    .hideable {
-      display: none;
-    }
-  </style>
+  <script src="https://unpkg.com/jsdom-web-components@latest/dist/bundle.js"></script>
 </head>
 <body>
   <header>
-  <h1>Url Shortener</h1>
-  <nav>
-    <li>
-      <a href="/login">Login</a>
-    </li>
-  </nav>
+    <h1>Url Shortener</h1>
+    <script>
+      let nav = document.createElement('app-nav');
+      nav.addItem('Login', '/login');
+      nav.render();
+    </script>
   </header>
-  <main id="main" class="container">
-    <form id="create-url-form">
-      <label for="url-input">Enter a Url:</label><br>
-      <input type="text" id="url-input" name="url"><br>
-      <button disabled type="submit" id="submit-button">Shorten</button>
-    </form>
-    <section id="form-result" class="hideable">
-      <p id="url-response"></p>
-      <p id="short-response"></p>
-    </section>
-    <section id="error-display" class="hideable">
-      <h2>Error</h2>
-    </section>
-  </main>
+  <main id="main" class="container"></main>
   <script>
-    const formEl = document.getElementById('create-url-form');
-    const urlInputEl = document.getElementById('url-input');
-    const buttonEl = document.getElementById('submit-button');
-    const responseEl = document.getElementById('form-result');
-    const errorEl = document.getElementById('error-display');
-    urlInputEl.addEventListener('input', handleInput);
-    formEl.addEventListener('submit', handleForm);
-
-    function handleInput(e) {
-      let { value } = e.target;
-      console.log('current input value :', e.target.value);
-      value ? buttonEl.disabled = false : buttonEl.disabled = true;
-    }
-
-    function toggleHideable(hideable) {
-      if (hideable.style.display === 'none') {
-        hideable.style.display = 'block';
-      } else {
-        hideable.style.display = 'none';
-      }
-    }
+    let form = document.createElement('app-form');
+    form.addTextInput({ id: 'url', label: 'Enter Url' });
+    form.setBackgroundColor('lightblue');
+    form.onSubmit(handleRequest);
+    form.render(document.querySelector('#main'));
 
     /**
      * logic for sending form data to url-shortener.
      */
-    function handleForm(e) {
-      e.preventDefault();
-      let url = e.target.url.value;
-      fetch('http://localhost:3000/api/url', {
+    function handleRequest(values) {
+      let url = values.url;
+      fetch('http://localhost:3000/api/link', {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -73,13 +39,9 @@
       .then(response => response.json())
       .then(json => {
         console.log('json response', json);
-        toggleHideable(responseEl);
-        document.querySelector('#url-response').text = json.long;
-        document.querySelector('#short-response').text = json.shortened;
       })
       .catch(e => {
-        // toggle error component
-        toggleHideable(errorEl);
+        console.error(e);
       });
     }
   </script>
